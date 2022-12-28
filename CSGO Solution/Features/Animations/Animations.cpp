@@ -130,28 +130,21 @@ void C_AnimationSync::Instance( ClientFrameStage_t Stage )
 		std::array < float_t, MAXSTUDIOPOSEPARAM > PoseParameters;
 		C_CSGOPlayerAnimationState AnimationState;
 
-		// бэкапим данные
 		std::memcpy( AnimationLayers.data( ), pPlayer->m_AnimationLayers( ), sizeof( C_AnimationLayer ) * ANIMATION_LAYER_COUNT );
 		std::memcpy( PoseParameters.data( ), pPlayer->m_aPoseParameters( ).data( ), sizeof( float_t ) * MAXSTUDIOPOSEPARAM );
 		std::memcpy( &AnimationState, pPlayer->m_PlayerAnimStateCSGO( ), sizeof( AnimationState ) );
 
-		// ротейтим игрока для сэйфпоинтов
 		for ( int32_t i = ROTATE_LEFT; i <= ROTATE_LOW_RIGHT; i++ )
 		{
-			// ротейтим игрока твою мать 
 			this->UpdatePlayerAnimations( pPlayer, LatestRecord, PreviousRecord, bHasPreviousRecord, i );
 
-			// сохраняем некоторые данные
 			std::memcpy( LatestRecord.m_AnimationLayers.at( i ).data( ), pPlayer->m_AnimationLayers( ), sizeof( C_AnimationLayer ) * ANIMATION_LAYER_COUNT );
 
-			// сетапим лееры сервера
 			std::memcpy( pPlayer->m_AnimationLayers( ), AnimationLayers.data( ), sizeof( C_AnimationLayer ) * ANIMATION_LAYER_COUNT );
 
-			// сетапим кости
 			if ( i < ROTATE_LOW_LEFT )
 				g_BoneManager->BuildMatrix( pPlayer, LatestRecord.m_Matricies[ i ].data( ), true );
 
-			// ресторим дефолтные данные
 			std::memcpy( pPlayer->m_aPoseParameters( ).data( ), PoseParameters.data( ), sizeof( float_t ) * MAXSTUDIOPOSEPARAM );
 			std::memcpy( pPlayer->m_PlayerAnimStateCSGO( ), &AnimationState, sizeof( AnimationState ) );
 		}
@@ -242,23 +235,17 @@ void C_AnimationSync::Instance( ClientFrameStage_t Stage )
 		else
 			this->UpdatePlayerAnimations( pPlayer, LatestRecord, PreviousRecord, bHasPreviousRecord, ROTATE_SERVER );
 
-		// форсим правильные лееры
 		std::memcpy( pPlayer->m_AnimationLayers( ), AnimationLayers.data( ), sizeof( C_AnimationLayer ) * ANIMATION_LAYER_COUNT );
 
-		// сэйвим позы
 		std::memcpy( LatestRecord.m_PoseParameters.data( ), pPlayer->m_aPoseParameters( ).data( ), sizeof( float_t ) * MAXSTUDIOPOSEPARAM );
 
-		// сетапим кости
 		g_BoneManager->BuildMatrix( pPlayer, LatestRecord.m_Matricies[ ROTATE_SERVER ].data( ), false );
 
-		// сэйвим кости
 		for ( int i = 0; i < MAXSTUDIOBONES; i++ )
 			m_BoneOrigins[ iPlayerID ][ i ] = pPlayer->GetAbsOrigin( ) - LatestRecord.m_Matricies[ ROTATE_SERVER ][ i ].GetOrigin( );
 
-		// кэшируем кости
 		std::memcpy( m_CachedMatrix[ iPlayerID ].data( ), LatestRecord.m_Matricies[ ROTATE_SERVER ].data( ), sizeof( matrix3x4_t ) * MAXSTUDIOBONES );
-
-		// плеер вышел с дорманта
+		
 		this->UnmarkAsDormant( iPlayerID );
 	}
 }
